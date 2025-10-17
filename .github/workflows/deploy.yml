@@ -1,0 +1,62 @@
+name: Deploy Quartz to GitHub Pages
+
+on:
+  # 'main' 브랜치에 push 이벤트가 발생했을 때 실행됩니다.
+  push:
+    branches:
+      - main
+
+# 워크플로우 실행에 필요한 권한을 설정합니다.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시에 여러 작업이 실행되는 것을 방지합니다.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 'build'라는 이름의 작업을 정의합니다.
+  build:
+    runs-on: ubuntu-latest # Ubuntu 최신 버전 환경에서 실행
+    steps:
+      # 1. 코드를 체크아웃(다운로드)합니다.
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Node.js 22 버전을 설치합니다.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # 3. 필요한 패키지(의존성)를 설치합니다.
+      - name: Install Dependencies
+        run: npm i
+
+      # 4. Quartz 빌드를 실행하여 static 사이트를 생성합니다.
+      - name: Build Quartz
+        run: npx quartz build
+
+      # 5. 빌드 결과물(public 폴더)을 업로드하여 다음 작업에서 사용할 수 있게 합니다.
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  # 'deploy'라는 이름의 작업을 정의합니다.
+  deploy:
+    needs: build # 'build' 작업이 성공해야만 실행됩니다.
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # 1. 위에서 업로드한 빌드 결과물을 GitHub Pages에 배포합니다.
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
