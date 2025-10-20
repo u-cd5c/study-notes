@@ -24,13 +24,13 @@ jobs:
     steps:
       # 1. 코드를 체크아웃(다운로드)합니다.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       # 2. Node.js 22 버전을 설치합니다.
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
 
@@ -44,7 +44,7 @@ jobs:
 
       # 5. 빌드 결과물(public 폴더)을 업로드하여 다음 작업에서 사용할 수 있게 합니다.
       - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: public
 
